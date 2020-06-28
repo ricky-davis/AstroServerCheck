@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>AstroServerChecker</title>
+        <link rel="stylesheet" href="{{ static_url('css/style.css') }}" />
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.css"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <h1 class="mx-auto my-5">
+                    Astroneer Dedicated Server Checker
+                </h1>
+            </div>
+            <div class="row">
+                <div id="main" class="col-12">
+                    <form id="checkIPPort">
+                        <label for="ip">IP: </label>
+                        <input type="text" name="ip" />
+                        <label for="port">Port: </label>
+                        <input type="text" name="port" />
+                        <button>Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script>
+            $("#checkIPPort button").click(function (e) {
+                e.preventDefault();
+                dSend = $("#checkIPPort").serialize();
+                $.ajax({
+                    type: "post",
+                    url: "/api",
+                    dataType: "json",
+                    data: dSend,
+                    contentType: "application/x-www-form-urlencoded",
+                    success: function (result) {
+                        console.log(result);
+                        alert("Success");
+                    },
+                    error: function (result) {
+                        console.log(result);
+                        alert("Error");
+                    },
+                });
+            });
+        </script>
+    </body>
+</html>
