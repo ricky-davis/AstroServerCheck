@@ -24,9 +24,9 @@
                 <div id="main" class="col-12">
                     <form id="checkIPPort">
                         <label for="ip">IP: </label>
-                        <input type="text" name="ip" />
+                        <input type="text" name="ip" value="{{ clientIP }}" />
                         <label for="port">Port: </label>
-                        <input type="text" name="port" />
+                        <input type="text" name="port" value="8777" />
                         <button>Submit</button>
                     </form>
                 </div>
@@ -34,25 +34,27 @@
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script>
-            $("#checkIPPort button").click(function (e) {
-                e.preventDefault();
-                dSend = $("#checkIPPort").serialize();
-                $.ajax({
-                    type: "post",
-                    url: "/api",
-                    dataType: "json",
-                    data: dSend,
-                    contentType: "application/x-www-form-urlencoded",
-                    success: function (result) {
-                        console.log(result);
-                        alert("Success");
-                    },
-                    error: function (result) {
-                        console.log(result);
-                        alert("Error");
-                    },
+            (function () {
+                $("#checkIPPort button").click(function (e) {
+                    e.preventDefault();
+                    dSend = $("#checkIPPort").serialize();
+                    $.ajax({
+                        type: "post",
+                        url: "/api",
+                        dataType: "json",
+                        data: dSend,
+                        contentType: "application/x-www-form-urlencoded",
+                        success: function (result) {
+                            console.log(result);
+                            alert(result.status);
+                        },
+                        error: function (result) {
+                            console.log(result);
+                            alert("Error");
+                        },
+                    });
                 });
-            });
+            })();
         </script>
     </body>
 </html>

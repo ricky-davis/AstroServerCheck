@@ -42,7 +42,10 @@ class MainHandler(tornado.web.RequestHandler):
         self.path = path
 
     def get(self):
-        self.render(os.path.join(self.path, 'index.html'))
+        clientIP = self.request.headers.get("X-Real-IP") or \
+            self.request.headers.get("X-Forwarded-For") or \
+            self.request.remote_ip
+        self.render(os.path.join(self.path, 'index.html'),clientIP = clientIP)
 
 
 class APIRequestHandler(tornado.web.RequestHandler):
@@ -63,9 +66,9 @@ class APIRequestHandler(tornado.web.RequestHandler):
             res = self.application.serverCache[ipPortCombo]
             fresh = False
         if res:
-            self.write(json.dumps({'status': 'ok', "fresh": fresh}))
+            self.write(json.dumps({'status': 'Success', "fresh": fresh}))
         else:
-            self.write(json.dumps({'status': 'error'}))
+            self.write(json.dumps({'status': 'Error'}))
 
 
 # Create a socket
