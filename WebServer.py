@@ -76,7 +76,7 @@ def sendPacket(MESSAGE, IP, Port):
     try:
         sock = socket.socket(socket.AF_INET,
                              socket.SOCK_DGRAM)
-        # sock.settimeout(5)
+        sock.settimeout(5)
         # Send message to UDP port
         print(f'sending message to {IP}:{Port}')
         sent = sock.sendto(MESSAGE, (IP, Port))
