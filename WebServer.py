@@ -42,21 +42,8 @@ class MainHandler(tornado.web.RequestHandler):
         self.path = path
 
     def get(self):
-        try:
-            print(self.request.headers.get("X-Real-IP"))
-        except:
-            pass
-        try:
-            print(self.request.headers.get("X-Forwarded-For"))
-        except:
-            pass
-        try:
-            print(self.request.remote_ip)
-        except:
-            pass
-        clientIP = self.request.headers.get("X-Real-IP") or \
-            self.request.headers.get("X-Forwarded-For") or \
-            self.request.remote_ip
+        print(self.request.remote_ip)
+        clientIP = self.request.remote_ip
         self.render(os.path.join(self.path, 'index.html'),clientIP = clientIP)
 
 
