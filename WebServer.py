@@ -4,6 +4,7 @@ import json
 import os
 import socket
 import sys
+from pprint import pprint
 from threading import Thread
 
 import tornado.web
@@ -39,6 +40,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.path = path
 
     def get(self):
+        pprint(self.request.headers)
         self.render(os.path.join(self.path, 'index.html'),
                     clientIP=self.request.remote_ip)
 
