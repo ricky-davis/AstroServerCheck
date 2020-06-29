@@ -17,7 +17,7 @@ from cachetools import TTLCache
 
 class WebServer(tornado.web.Application):
     def __init__(self):
-        self.serverCache = TTLCache(maxsize=10, ttl=10)
+        self.serverCache = TTLCache(maxsize=500, ttl=10)
         settings = {
             'debug': True,
             "static_path": "public",
