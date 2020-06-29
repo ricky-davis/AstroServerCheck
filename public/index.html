@@ -47,7 +47,7 @@
                     $("#ip").val(json.ip);
                 });
                 const statusMsg = (msg) => {
-                    $("#msg").removeClass("bg-success bg-danger");
+                    $("#msg").removeClass("bg-success bg-danger bg-warning");
                     if (msg == "Error") {
                         $("#msg h5").text("Error: Unable to connect to server");
                         $("#msg").addClass("bg-danger");
@@ -56,11 +56,16 @@
                         $("#msg h5").text("Server is online!");
                         $("#msg").addClass("bg-success");
                         $("#msg").collapse("show");
+                    } else if (msg == "Checking") {
+                        $("#msg h5").text("Checking...");
+                        $("#msg").addClass("bg-warning");
+                        $("#msg").collapse("show");
                     }
                 };
                 $("#checkIPPort button").click(function (e) {
                     e.preventDefault();
                     dSend = $("#checkIPPort").serialize();
+                    statusMsg("Checking");
                     $.ajax({
                         type: "post",
                         url: "/api",
