@@ -24,7 +24,12 @@
                 <div id="main" class="col-4 mx-auto">
                     <form id="checkIPPort">
                         <label for="ip">IP: </label>
-                        <input type="text" name="ip" id="ip" />
+                        <input
+                            type="text"
+                            name="ip"
+                            id="ip"
+                            value="{{ clientIP }}"
+                        />
                         <label for="port">Port: </label>
                         <input type="text" name="port" id="port" value="8777" />
                         <button>Submit</button>
