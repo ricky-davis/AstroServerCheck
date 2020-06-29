@@ -21,20 +21,43 @@
                 </h1>
             </div>
             <div class="row">
-                <div id="main" class="col-12">
+                <div id="main" class="col-4 mx-auto">
                     <form id="checkIPPort">
                         <label for="ip">IP: </label>
-                        <input type="text" name="ip" value="{{ clientIP }}" />
+                        <input type="text" name="ip" id="ip" />
                         <label for="port">Port: </label>
-                        <input type="text" name="port" value="8777" />
+                        <input type="text" name="port" id="port" value="8777" />
                         <button>Submit</button>
                     </form>
+                    <div id="msg" class="text-center collapse">
+                        <h5></h5>
+                    </div>
                 </div>
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <script>
+        <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+            integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+            crossorigin="anonymous"
+        ></script>
+        <script type="application/javascript">
             (function () {
+                $.getJSON("https://api.ipify.org?format=json", function (json) {
+                    $("#ip").val(json.ip);
+                });
+                const statusMsg = (msg) => {
+                    $("#msg").removeClass("bg-success bg-danger");
+                    if (msg == "Error") {
+                        $("#msg h5").text("Error: Unable to connect to server");
+                        $("#msg").addClass("bg-danger");
+                        $("#msg").collapse("show");
+                    } else if (msg == "Success") {
+                        $("#msg h5").text("Server is online!");
+                        $("#msg").addClass("bg-success");
+                        $("#msg").collapse("show");
+                    }
+                };
                 $("#checkIPPort button").click(function (e) {
                     e.preventDefault();
                     dSend = $("#checkIPPort").serialize();
@@ -46,11 +69,13 @@
                         contentType: "application/x-www-form-urlencoded",
                         success: function (result) {
                             console.log(result);
-                            alert(result.status);
+                            statusMsg(result.status);
+                            //alert(result.status);
                         },
                         error: function (result) {
                             console.log(result);
-                            alert("Error");
+                            statusMsg(result.status);
+                            //alert("Error");
                         },
                     });
                 });

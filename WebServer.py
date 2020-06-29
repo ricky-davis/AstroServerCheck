@@ -42,9 +42,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.path = path
 
     def get(self):
-        print(self.request.remote_ip)
-        clientIP = self.request.remote_ip
-        self.render(os.path.join(self.path, 'index.html'),clientIP = clientIP)
+        self.render(os.path.join(self.path, 'index.html'))
 
 
 class APIRequestHandler(tornado.web.RequestHandler):
