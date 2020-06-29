@@ -1,5 +1,3 @@
 -i https://pypi.org/simple
-asyncio==3.4.3
 cachetools==4.1.1
-pprint==0.1
 tornado==6.0.4

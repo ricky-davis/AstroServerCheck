@@ -1,11 +1,7 @@
 
-import asyncio
 import json
 import os
 import socket
-import sys
-from pprint import pprint
-from threading import Thread
 
 import tornado.web
 from cachetools import TTLCache
@@ -43,7 +39,8 @@ class MainHandler(tornado.web.RequestHandler):
         clientIP = self.request.headers.get("X-Real-IP") or \
             self.request.headers.get("X-Forwarded-For") or \
             self.request.remote_ip
-        pprint(list(self.request.headers.get_all()))
+        # pprint(list(self.request.headers.get_all()))
+        print(f"Webpage opened at: {self.request.headers.get('X-Real-IP')}")
         self.render(os.path.join(self.path, 'index.html'),
                     clientIP=clientIP)
 
@@ -93,15 +90,7 @@ def sendPacket(MESSAGE, IP, Port):
 def start_WebServer():
     ws = WebServer()
 
-    def start_server():
-        if sys.version_info.minor > 7:
-            asyncio.set_event_loop_policy(
-                asyncio.WindowsSelectorEventLoopPolicy())
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        ws.run()
-
-    t = Thread(target=start_server, args=())
-    t.start()
+    ws.run()
 
 
 if __name__ == "__main__":

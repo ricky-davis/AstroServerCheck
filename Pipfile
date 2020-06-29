@@ -8,9 +8,7 @@ autopep8 = "*"
 pylint = "*"
 
 [packages]
-pprint = "*"
 tornado = "*"
-asyncio = "*"
 cachetools = "*"
 
 [requires]
