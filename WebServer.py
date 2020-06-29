@@ -1,10 +1,7 @@
 
 import asyncio
-import hashlib
 import json
-import logging
 import os
-import secrets
 import socket
 import sys
 from threading import Thread
@@ -76,11 +73,11 @@ def sendPacket(MESSAGE, IP, Port):
         sock.settimeout(5)
         # Send message to UDP port
         print(f'sending message to {IP}:{Port}')
-        sent = sock.sendto(MESSAGE, (IP, Port))
+        sock.sendto(MESSAGE, (IP, Port))
 
         # Receive response
         print('waiting to receive')
-        data, server = sock.recvfrom(4096)
+        data, _server = sock.recvfrom(4096)
         print('received "%s"' % data)
         return True
     except:
