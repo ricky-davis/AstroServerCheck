@@ -47,7 +47,9 @@
                     $("#ip").val(json.ip);
                 });
                 const statusMsg = (msg) => {
-                    $("#msg").removeClass("bg-success bg-danger bg-warning");
+                    $("#msg").removeClass(
+                        "bg-success bg-danger bg-warning text-light text-dark"
+                    );
                     if (msg == "Error") {
                         $("#msg h5").text("Error: Unable to connect to server");
                         $("#msg").addClass("bg-danger");
@@ -59,6 +61,7 @@
                     } else if (msg == "Checking") {
                         $("#msg h5").text("Checking...");
                         $("#msg").addClass("bg-warning");
+                        $("#msg").addClass("text-dark");
                         $("#msg").collapse("show");
                     }
                 };
