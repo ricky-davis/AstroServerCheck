@@ -48,9 +48,13 @@
         ></script>
         <script type="application/javascript">
             (function () {
-                $.getJSON("https://api.ipify.org?format=json", function (json) {
-                    $("#ip").val(json.ip);
-                });
+                if ($("#ip").val() == "") {
+                    $.getJSON("https://api.ipify.org?format=json", function (
+                        json
+                    ) {
+                        $("#ip").val(json.ip);
+                    });
+                }
                 const statusMsg = (msg) => {
                     $("#msg").removeClass(
                         "bg-success bg-danger bg-warning text-light text-dark"
