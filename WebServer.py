@@ -68,11 +68,26 @@ class APIRequestHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'status': 'Error'}))
 
 
+def check_ipv6(n):
+    try:
+        socket.inet_pton(socket.AF_INET6, n)
+        print(f"{n} is IPV6!")
+        return True
+    except socket.error:
+        print(f"{n} is IPV4!")
+        return False
+
 # Create a socket
+
+
 def sendPacket(MESSAGE, IP, Port):
     try:
-        sock = socket.socket(socket.AF_INET,
-                             socket.SOCK_DGRAM)
+        if check_ipv6(IP):
+            sock = socket.socket(socket.AF_INET6,
+                                 socket.SOCK_DGRAM)
+        else:
+            sock = socket.socket(socket.AF_INET,
+                                 socket.SOCK_DGRAM)
         sock.settimeout(5)
         # Send message to UDP port
         print(f'sending message to {IP}:{Port}')
@@ -80,10 +95,12 @@ def sendPacket(MESSAGE, IP, Port):
 
         # Receive response
         print('waiting to receive')
+        sock.settimeout(5)
         data, _server = sock.recvfrom(4096)
         print('received "%s"' % data)
         return True
     except:
+        print(f"Timeout for {IP}:{Port}")
         return False
 
 
