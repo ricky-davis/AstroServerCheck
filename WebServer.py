@@ -39,10 +39,23 @@ class MainHandler(tornado.web.RequestHandler):
         clientIP = self.request.headers.get("X-Real-IP") or \
             self.request.headers.get("X-Forwarded-For") or \
             self.request.remote_ip
+        clientPort = '8777'
+        args = self.request.arguments
+
+        if 'url' in args:
+            url = (args['url'][0]).split(b":")
+            clientIP = url[0]
+            clientPort = url[1]
+        else:
+            if 'ip' in args:
+                clientIP = (args['ip'][0])
+            if 'port' in args:
+                clientPort = (args['port'][0])
+
         # pprint(list(self.request.headers.get_all()))
         print(f"Webpage opened at: {self.request.headers.get('X-Real-IP')}")
         self.render(os.path.join(self.path, 'index.html'),
-                    clientIP=clientIP)
+                    clientIP=clientIP, clientPort=clientPort)
 
 
 class APIRequestHandler(tornado.web.RequestHandler):
@@ -111,4 +124,7 @@ def start_WebServer():
 
 
 if __name__ == "__main__":
-    start_WebServer()
+    try:
+        start_WebServer()
+    except KeyboardInterrupt:
+        print("WebServer was killed by CTRL+C")

@@ -31,7 +31,12 @@
                             value="{{ clientIP }}"
                         />
                         <label for="port">Port: </label>
-                        <input type="text" name="port" id="port" value="8777" />
+                        <input
+                            type="text"
+                            name="port"
+                            id="port"
+                            value="{{ clientPort }}"
+                        />
                         <button>Submit</button>
                     </form>
                     <div id="msg" class="text-center collapse">
@@ -39,6 +44,7 @@
                     </div>
                 </div>
             </div>
+            <div class="row"></div>
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script
