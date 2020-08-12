@@ -16,35 +16,38 @@
     <body>
         <div class="container-fluid">
             <div class="row">
-                <h1 class="mx-auto my-5">
-                    Astroneer Dedicated Server Checker
-                </h1>
-            </div>
-            <div class="row">
-                <div id="main" class="col-4 mx-auto">
-                    <form id="checkIPPort">
-                        <label for="ip">IP: </label>
-                        <input
-                            type="text"
-                            name="ip"
-                            id="ip"
-                            value="{{ clientIP }}"
-                        />
-                        <label for="port">Port: </label>
-                        <input
-                            type="text"
-                            name="port"
-                            id="port"
-                            value="{{ clientPort }}"
-                        />
-                        <button>Submit</button>
-                    </form>
-                    <div id="msg" class="text-center collapse">
-                        <h5></h5>
+                <div id="main" class="col-4 mx-auto my-5">
+                    <div class="card bg-dark">
+                        <div class="card-header">
+                            <h1>Astroneer Dedicated Server Checker</h1>
+                        </div>
+                        <div class="card-body">
+                            <form id="checkIPPort">
+                                <label for="ip">IP: </label>
+                                <input
+                                    type="text"
+                                    name="ip"
+                                    id="ip"
+                                    value="{{ clientIP }}"
+                                />
+                                <label for="port">Port: </label>
+                                <input
+                                    type="text"
+                                    name="port"
+                                    id="port"
+                                    value="{{ clientPort }}"
+                                />
+                                <button>Submit</button>
+                            </form>
+                        </div>
+                        <div class="card-footer">
+                            <div id="msg" class="text-center collapse">
+                                <h5></h5>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row"></div>
         </div>
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script
@@ -82,6 +85,12 @@
                 };
                 $("#checkIPPort button").click(function (e) {
                     e.preventDefault();
+                    let ip = $("#ip").val();
+                    let port = $("#port").val();
+
+                    window.location.href = "?url=" + ip + ":" + port;
+                });
+                $(document).ready(function (e) {
                     dSend = $("#checkIPPort").serialize();
                     statusMsg("Checking");
                     $.ajax({

@@ -23,6 +23,6 @@ body {
     color: var(--light-text-color);
 }
 
-#main {
-    height: 60px;
+#main .card-footer {
+    height: 55px;
 }
