@@ -221,7 +221,14 @@
                 $("#checkIPPort button").click(function (e) {
                     e.preventDefault();
                     let ip_port = $("#ip_port").val();
-
+                    let spl = ip_port.split(":");
+                    if (spl.length > 0 && spl[0] != "") {
+                        if (spl.length < 2) {
+                            ip_port = spl[0] + ":" + "8777";
+                        }
+                    } else {
+                        ip_port = "{{clientIP}}:8777";
+                    }
                     window.location.href = "?url=" + ip_port;
                 });
                 $(document).ready(function (e) {
