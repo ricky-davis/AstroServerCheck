@@ -68,8 +68,10 @@ class MainHandler(tornado.web.RequestHandler):
 
         if 'url' in args:
             url = (args['url'][0]).split(b":")
-            clientIP = url[0]
-            clientPort = url[1]
+            if len(url) > 0:
+                clientIP = url[0]
+            if len(url) > 1 and url[1] != b'':
+                clientPort = url[1]
         else:
             if 'ip' in args:
                 clientIP = (args['ip'][0])
@@ -86,72 +88,84 @@ class APIRequestHandler(tornado.web.RequestHandler):
     # pylint: disable=arguments-differ
     def post(self):
         # "70.130.124.250"  # Target IP Address
-        UDP_IP = self.get_argument("ip")
-        UDP_PORT = int(self.get_argument("port"))  # 8777
-        ipPortCombo = f"{UDP_IP}:{UDP_PORT}"
-        data = {
-            "Server": False,
-            "Playfab": False,
-            "Version": 0,
-            "UpToDate": True,
-            "LatestVersion": "0.0",
-            "PlayerCount": "0/12",
-            "Password": False,
-            "Type": "Unknown",
-            "Fresh": True,
-        }
+        UDP_IP_PORT = self.get_argument("ip_port")
+        UDP_IP = None
+        UDP_PORT = None
+        splitIPP = UDP_IP_PORT.split(":")
+        if(len(splitIPP) > 0):
+            UDP_IP = splitIPP[0]
+            if(len(splitIPP) > 1) and splitIPP[1] != b'':
+                UDP_PORT = splitIPP[1]
+            else:
+                UDP_PORT = "8777"
+            UDP_IP_PORT = UDP_IP+":"+UDP_PORT
 
-        if ipPortCombo not in self.application.serverCache:
-            byteArray = [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08]
-            res = sendPacket(bytes(byteArray), UDP_IP, UDP_PORT)
-            data['Server'] = res
+            ipPortCombo = f"{UDP_IP_PORT}"
+            data = {
+                "Server": False,
+                "Playfab": False,
+                "Version": 0,
+                "UpToDate": True,
+                "LatestVersion": "0.0",
+                "PlayerCount": "0/12",
+                "Password": False,
+                "Type": "Unknown",
+                "Fresh": True,
+            }
 
-            headers = base_headers
-            headers["X-Authorization"] = generate_XAUTH("7")
-            apfData = get_all_servers(headers)
-            if len(apfData['data']['Games']) > 0:
-                apfData = apfData['data']['Games']
-                self.application.allServerData = apfData
-                allVers = [x['Tags']['gameBuild'] for x in apfData]
-                maxVers = "0.0"
-                for v in allVers:
-                    if version.parse(v) > version.parse(maxVers):
-                        maxVers = v
+            if ipPortCombo not in self.application.serverCache:
+                byteArray = [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08]
+                res = sendPacket(bytes(byteArray), UDP_IP, UDP_PORT)
+                data['Server'] = res
 
-                pfData = [x for x in apfData if x['Tags']
-                          ['gameId'] == ipPortCombo]
+                headers = base_headers
+                headers["X-Authorization"] = generate_XAUTH("7")
+                apfData = get_all_servers(headers)
+                if len(apfData['data']['Games']) > 0:
+                    apfData = apfData['data']['Games']
+                    self.application.allServerData = apfData
+                    allVers = [x['Tags']['gameBuild'] for x in apfData]
+                    maxVers = "0.0"
+                    for v in allVers:
+                        if version.parse(v) > version.parse(maxVers):
+                            maxVers = v
 
-                if len(pfData) > 0:
-                    pfData = pfData[0]
-                    data['Playfab'] = True
-                    data['Type'] = pfData['Tags']['category']
-                    if data['Type'] == "Individual":
-                        data['Type'] = "Self-Hosted"
-                        if "customdata" in pfData['Tags']['serverName']:
-                            cdata = json.loads(pfData['Tags']['serverName'])[
-                                'customdata']
-                            data['Type'] = f"{cdata['ServerType']}"
-                    else:
-                        data['Type'] = "Nitrado"
+                    pfData = [x for x in apfData if x['Tags']
+                              ['gameId'] == ipPortCombo]
 
-                    data['Version'] = pfData['Tags']['gameBuild']
+                    if len(pfData) > 0:
+                        pfData = pfData[0]
+                        data['Playfab'] = True
+                        data['Type'] = pfData['Tags']['category']
+                        if data['Type'] == "Individual":
+                            data['Type'] = "Self-Hosted"
+                            if "customdata" in pfData['Tags']['serverName']:
+                                cdata = json.loads(pfData['Tags']['serverName'])[
+                                    'customdata']
+                                data['Type'] = f"{cdata['ServerType']}"
+                        else:
+                            data['Type'] = "Nitrado"
 
-                    data['UpToDate'] = version.parse(
-                        data['Version']) >= version.parse(maxVers)
-                    data['LatestVersion'] = maxVers
+                        data['Version'] = pfData['Tags']['gameBuild']
 
-                    data['PlayerCount'] = f"{len(pfData['PlayerUserIds'])}/{pfData['Tags']['maxPlayers']}"
-                    data['Password'] = pfData['Tags']['requiresPassword']
+                        data['UpToDate'] = version.parse(
+                            data['Version']) >= version.parse(maxVers)
+                        data['LatestVersion'] = maxVers
 
-            data['Fresh'] = True
-            self.application.serverCache[ipPortCombo] = data
+                        data['PlayerCount'] = f"{len(pfData['PlayerUserIds'])}/{pfData['Tags']['maxPlayers']}"
+                        data['Password'] = pfData['Tags']['requiresPassword']
 
+                data['Fresh'] = True
+                self.application.serverCache[ipPortCombo] = data
+
+            else:
+                data = self.application.serverCache[ipPortCombo]
+                data['Fresh'] = False
+
+            self.write(json.dumps(data))
         else:
-            data = self.application.serverCache[ipPortCombo]
-            data['Fresh'] = False
-
-        self.write(json.dumps(data))
+            self.write(json.dumps({"status": "Error"}))
 
 
 def check_ipv6(n):

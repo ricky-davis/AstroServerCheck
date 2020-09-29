@@ -31,32 +31,21 @@
                                 class="form-inline d-flex justify-content-center"
                             >
                                 <div class="form-group">
-                                    <label class="sr-only" for="ip">IP</label>
-                                    <input
-                                        type="text"
-                                        class="form-control mx-2"
-                                        name="ip"
-                                        id="ip"
-                                        placeholder="IP"
-                                        value="{{ clientIP }}"
-                                    />
-                                </div>
-                                <div class="form-group">
-                                    <label class="sr-only" for="port"
-                                        >Port</label
+                                    <label class="sr-only" for="ip_port"
+                                        >IP:Port</label
                                     >
                                     <input
                                         type="text"
                                         class="form-control mx-2"
-                                        name="port"
-                                        id="port"
-                                        placeholder="Port"
-                                        value="{{ clientPort }}"
+                                        name="ip_port"
+                                        id="ip_port"
+                                        placeholder="IP:Port"
+                                        value="{{ clientIP }}:{{ clientPort }}"
                                     />
                                 </div>
                                 <div class="form-group">
                                     <button class="btn btn-primary mx-2">
-                                        Submit
+                                        Check
                                     </button>
                                 </div>
                             </form>
@@ -231,10 +220,9 @@
                 };
                 $("#checkIPPort button").click(function (e) {
                     e.preventDefault();
-                    let ip = $("#ip").val();
-                    let port = $("#port").val();
+                    let ip_port = $("#ip_port").val();
 
-                    window.location.href = "?url=" + ip + ":" + port;
+                    window.location.href = "?url=" + ip_port;
                 });
                 $(document).ready(function (e) {
                     dSend = $("#checkIPPort").serialize();
