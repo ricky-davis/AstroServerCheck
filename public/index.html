@@ -170,6 +170,10 @@
                                 $("#msg h5").text("Status: Unregistered");
                                 $("#msg").addClass("bg-danger");
                             }
+                            if (!data.Playfab && !data.Server) {
+                                $("#msg h5").text("Status: OFFLINE");
+                                $("#msg").addClass("bg-danger");
+                            }
                         }
                         if (data.Server) {
                             $("#servstatus").addClass("bg-success");
