@@ -148,6 +148,7 @@
                     $("#msg").removeClass(
                         "bg-success bg-danger bg-warning text-light text-dark"
                     );
+                    $("#tiptext").html("");
                     if (data.status) {
                         $("#msg h5").text("Checking...");
                         $("#msg").addClass("bg-warning");
@@ -162,20 +163,20 @@
                             $("#servtype").show();
                             $("#servpass").show();
                         } else {
-                            $("#servversion").hide();
-                            $("#servplayers").hide();
-                            $("#servtype").hide();
-                            $("#servpass").hide();
                             if (!data.Server) {
                                 $("#tiptext").append(
-                                    "<div>Tip: Your server is unreachable! Recheck your Port Forwards and Firewall!</div>"
+                                    "<div>Tip: This server is unreachable! If you are server owner, make sure to check Port Forwards and Firewall!</div>"
                                 );
                                 $("#msg h5").text("Status: Unreachable");
                                 $("#msg").addClass("bg-danger");
                             }
                             if (!data.Playfab) {
+                                $("#servversion").hide();
+                                $("#servplayers").hide();
+                                $("#servtype").hide();
+                                $("#servpass").hide();
                                 $("#tiptext").append(
-                                    "<div>Tip: Your server is not registered with Playfab! Make sure you're not blocking playfab's IP's!</div>"
+                                    "<div>Tip: This server is not registered with Playfab! If you are server owner, make sure you're not blocking Playfab's IP's!</div>"
                                 );
                                 $("#msg h5").text("Status: Unregistered");
                                 $("#msg").addClass("bg-danger");
@@ -210,7 +211,7 @@
                             $("#servversion").addClass("bg-warning");
                             $("#servversion").addClass("text-dark");
                             $("#tiptext").append(
-                                "<div>Tip: Your server isn't on the latest version! Make sure to update!</div>"
+                                "<div>Tip: This server isn't on the latest version! Make sure to update!</div>"
                             );
                         } else {
                             $("#servversion").addClass("bg-success");
