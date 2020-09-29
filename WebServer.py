@@ -3,15 +3,39 @@ import json
 import os
 import socket
 
+import requests
 import tornado.web
 from cachetools import TTLCache
+from packaging import version
 
 # pylint: disable=abstract-method,attribute-defined-outside-init,no-member
+
+
+base_headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-PlayFabSDK": "UE4MKPL-1.19.190610",
+    "User-Agent": "game=Astro, engine=UE4, version=4.18.2-0+++UE4+Release-4.18, platform=Windows, osver=6.2.9200.1.256.64bit",
+}
+
+
+def generate_XAUTH(serverGUID):
+    url = "https://5EA1.playfabapi.com/Client/LoginWithCustomID?sdk=UE4MKPL-1.19.190610"
+    requestObj = {"CreateAccount": True,
+                  "CustomId": serverGUID, "TitleId": "5EA1"}
+    x = (requests.post(url, headers=base_headers, json=requestObj)).json()
+    return x["data"]["SessionTicket"]
+
+
+def get_all_servers(headers):
+    url = "https://5EA1.playfabapi.com/Client/GetCurrentGames?sdk=UE4MKPL-1.19.190610"
+    x = (requests.post(url, headers=headers, json={})).json()
+    return x
 
 
 class WebServer(tornado.web.Application):
     def __init__(self):
         self.serverCache = TTLCache(maxsize=500, ttl=10)
+        self.allServerData = {}
         settings = {
             'debug': True,
             "static_path": "public",
@@ -65,20 +89,58 @@ class APIRequestHandler(tornado.web.RequestHandler):
         UDP_IP = self.get_argument("ip")
         UDP_PORT = int(self.get_argument("port"))  # 8777
         ipPortCombo = f"{UDP_IP}:{UDP_PORT}"
+        data = {
+            "Server": False,
+            "Playfab": False,
+            "Version": 0,
+            "UpToDate": True,
+            "LatestVersion": "0.0",
+            "PlayerCount": "0/12",
+            "Password": False,
+            "Fresh": True,
+        }
 
         if ipPortCombo not in self.application.serverCache:
             byteArray = [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08]
             res = sendPacket(bytes(byteArray), UDP_IP, UDP_PORT)
-            self.application.serverCache[ipPortCombo] = res
-            fresh = True
+            data['Server'] = res
+
+            headers = base_headers
+            headers["X-Authorization"] = generate_XAUTH("7")
+            apfData = get_all_servers(headers)
+            if len(apfData['data']['Games']) > 0:
+                apfData = apfData['data']['Games']
+                self.application.allServerData = apfData
+                allVers = [x['Tags']['gameBuild'] for x in apfData]
+                maxVers = "0.0"
+                for v in allVers:
+                    if version.parse(v) > version.parse(maxVers):
+                        maxVers = v
+
+                pfData = [x for x in apfData if x['Tags']
+                          ['gameId'] == ipPortCombo]
+
+                if len(pfData) > 0:
+                    pfData = pfData[0]
+                    data['Playfab'] = True
+                    data['Version'] = pfData['Tags']['gameBuild']
+
+                    data['UpToDate'] = version.parse(
+                        data['Version']) >= version.parse(maxVers)
+                    data['LatestVersion'] = maxVers
+
+                    data['PlayerCount'] = f"{len(pfData['PlayerUserIds'])}/{pfData['Tags']['maxPlayers']}"
+                    data['Password'] = pfData['Tags']['requiresPassword']
+
+            data['Fresh'] = True
+            self.application.serverCache[ipPortCombo] = data
+
         else:
-            res = self.application.serverCache[ipPortCombo]
-            fresh = False
-        if res:
-            self.write(json.dumps({'status': 'Success', "fresh": fresh}))
-        else:
-            self.write(json.dumps({'status': 'Error'}))
+            data = self.application.serverCache[ipPortCombo]
+            data['Fresh'] = False
+
+        self.write(json.dumps(data))
 
 
 def check_ipv6(n):

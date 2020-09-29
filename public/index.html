@@ -16,12 +16,12 @@
     <body>
         <div class="container-fluid">
             <div class="row">
-                <div id="main" class="col-4 mx-auto my-5">
+                <div id="main" class="col-3 mx-auto my-5">
                     <div class="card bg-dark">
                         <div class="card-header">
-                            <h1>Astroneer Dedicated Server Checker</h1>
+                            <h2>Astroneer Dedicated Server Checker</h2>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body p-0">
                             <form id="checkIPPort">
                                 <label for="ip">IP: </label>
                                 <input
@@ -39,10 +39,60 @@
                                 />
                                 <button>Submit</button>
                             </form>
-                        </div>
-                        <div class="card-footer">
-                            <div id="msg" class="text-center collapse">
+                            <div id="msg" class="p-0">
                                 <h5></h5>
+                            </div>
+                        </div>
+                        <div
+                            id="data-footer"
+                            class="card-footer text-center collapse p-0"
+                        >
+                            <div class="row text-left m-0">
+                                <div class="ml-auto col-6 bg-dark">
+                                    <div class="row">
+                                        <div class="col-12">Server:</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">Playfab:</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            Server Version:
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">Players:</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">Password:</div>
+                                    </div>
+                                </div>
+                                <div class="mr-auto col-6 bg-dark">
+                                    <div class="row">
+                                        <div
+                                            id="servstatus"
+                                            class="col-12"
+                                        ></div>
+                                    </div>
+                                    <div class="row">
+                                        <div id="pfstatus" class="col-12"></div>
+                                    </div>
+                                    <div class="row">
+                                        <div
+                                            id="servversion"
+                                            class="col-12"
+                                        ></div>
+                                    </div>
+                                    <div class="row">
+                                        <div
+                                            id="servplayers"
+                                            class="col-12"
+                                        ></div>
+                                    </div>
+                                    <div class="row">
+                                        <div id="servpass" class="col-12"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -64,23 +114,70 @@
                         $("#ip").val(json.ip);
                     });
                 }
-                const statusMsg = (msg) => {
+                const statusMsg = (data) => {
                     $("#msg").removeClass(
                         "bg-success bg-danger bg-warning text-light text-dark"
                     );
-                    if (msg == "Error") {
-                        $("#msg h5").text("Error: Unable to connect to server");
-                        $("#msg").addClass("bg-danger");
-                        $("#msg").collapse("show");
-                    } else if (msg == "Success") {
-                        $("#msg h5").text("Server is online!");
-                        $("#msg").addClass("bg-success");
-                        $("#msg").collapse("show");
-                    } else if (msg == "Checking") {
+                    if (data.status) {
                         $("#msg h5").text("Checking...");
                         $("#msg").addClass("bg-warning");
                         $("#msg").addClass("text-dark");
-                        $("#msg").collapse("show");
+                    } else {
+                        if (data.Server && data.Playfab) {
+                            $("#msg h5").text("Status: Online");
+                            $("#msg").addClass("bg-success");
+                            $("#servversion").show();
+                            $("#servplayers").show();
+                            $("#servpass").show();
+                        } else {
+                            $("#servversion").hide();
+                            $("#servplayers").hide();
+                            $("#servpass").hide();
+                            if (!data.Server) {
+                                $("#msg h5").text("Status: Unreachable");
+                                $("#msg").addClass("bg-danger");
+                            }
+                            if (!data.Playfab) {
+                                $("#msg h5").text("Status: Unregistered");
+                                $("#msg").addClass("bg-danger");
+                            }
+                        }
+                        if (data.Server) {
+                            $("#servstatus").addClass("bg-success");
+                            $("#servstatus").addClass("text-dark");
+                        } else {
+                            $("#servstatus").addClass("bg-danger");
+                        }
+                        data.Server = data.Server ? "Reachable" : "Unreachable";
+                        $("#servstatus").text(data.Server);
+
+                        if (data.Playfab) {
+                            $("#pfstatus").addClass("bg-success");
+                            $("#pfstatus").addClass("text-dark");
+                        } else {
+                            $("#pfstatus").addClass("bg-danger");
+                        }
+                        data.Playfab = data.Playfab
+                            ? "Registered"
+                            : "Unregistered";
+                        $("#pfstatus").text(data.Playfab);
+
+                        if (!data.UpToDate) {
+                            data.Version =
+                                data.Version +
+                                " (Latest: " +
+                                data.LatestVersion +
+                                ")";
+                            $("#servversion").addClass("bg-warning");
+                            $("#servversion").addClass("text-dark");
+                        }
+                        $("#servversion").text(data.Version);
+
+                        $("#servplayers").text(data.PlayerCount);
+
+                        $("#servpass").text(data.Password);
+
+                        $("#data-footer").collapse("show");
                     }
                 };
                 $("#checkIPPort button").click(function (e) {
@@ -92,7 +189,7 @@
                 });
                 $(document).ready(function (e) {
                     dSend = $("#checkIPPort").serialize();
-                    statusMsg("Checking");
+                    statusMsg({ status: "Checking" });
                     $.ajax({
                         type: "post",
                         url: "/api",
@@ -101,12 +198,12 @@
                         contentType: "application/x-www-form-urlencoded",
                         success: function (result) {
                             console.log(result);
-                            statusMsg(result.status);
+                            statusMsg(result);
                             //alert(result.status);
                         },
                         error: function (result) {
                             console.log(result);
-                            statusMsg(result.status);
+                            statusMsg(result);
                             //alert("Error");
                         },
                     });

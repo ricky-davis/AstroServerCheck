@@ -22,7 +22,3 @@ body {
     font-family: "Roboto", sans-serif;
     color: var(--light-text-color);
 }
-
-#main .card-footer {
-    height: 55px;
-}

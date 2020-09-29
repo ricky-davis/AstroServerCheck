@@ -10,6 +10,8 @@ pylint = "*"
 [packages]
 tornado = "*"
 cachetools = "*"
+requests = "*"
+packaging = "*"
 
 [requires]
 python_version = "3.7"
