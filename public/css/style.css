@@ -22,3 +22,13 @@ body {
     font-family: "Roboto", sans-serif;
     color: var(--light-text-color);
 }
+#data-footer .col-12 {
+    padding: 5px;
+}
+#data-footer .row:not(:last-child) .col-12 {
+    border-bottom: 1px solid black;
+}
+#data-footer .col-12 span {
+    padding: 3px;
+    border-radius: 7px;
+}

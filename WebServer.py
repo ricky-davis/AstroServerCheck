@@ -97,6 +97,7 @@ class APIRequestHandler(tornado.web.RequestHandler):
             "LatestVersion": "0.0",
             "PlayerCount": "0/12",
             "Password": False,
+            "Type": "Unknown",
             "Fresh": True,
         }
 
@@ -124,6 +125,16 @@ class APIRequestHandler(tornado.web.RequestHandler):
                 if len(pfData) > 0:
                     pfData = pfData[0]
                     data['Playfab'] = True
+                    data['Type'] = pfData['Tags']['category']
+                    if data['Type'] == "Individual":
+                        data['Type'] = "Self-Hosted"
+                        if "customdata" in pfData['Tags']['serverName']:
+                            cdata = json.loads(pfData['Tags']['serverName'])[
+                                'customdata']
+                            data['Type'] = f"{cdata['ServerType']}"
+                    else:
+                        data['Type'] = "Nitrado"
+
                     data['Version'] = pfData['Tags']['gameBuild']
 
                     data['UpToDate'] = version.parse(
