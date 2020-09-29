@@ -22,13 +22,22 @@ body {
     font-family: "Roboto", sans-serif;
     color: var(--light-text-color);
 }
-#data-footer .col-12 {
+#main {
+    min-width: 580px;
+}
+.datarow {
     padding: 5px;
 }
-#data-footer .row:not(:last-child) .col-12 {
+.datarow .col-6:first-child {
+    border-right: 1px solid black;
+}
+#data-footer .row:not(:last-child) {
     border-bottom: 1px solid black;
 }
 #data-footer .col-12 span {
     padding: 3px;
     border-radius: 7px;
+}
+#tiptext div {
+    border-bottom: 1px solid #333;
 }

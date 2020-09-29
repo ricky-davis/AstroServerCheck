@@ -2,6 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=0.7, maximum-scale=1, user-scalable=no"
+        />
         <title>AstroServerChecker</title>
         <link rel="stylesheet" href="{{ static_url('css/style.css') }}" />
         <link
@@ -16,30 +20,47 @@
     <body>
         <div class="container-fluid">
             <div class="row">
-                <div id="main" class="col-3 mx-auto my-5">
+                <div id="main" class="col-12 col-md-6 col-xl-4 mx-auto my-5">
                     <div class="card bg-dark">
                         <div class="card-header">
                             <h2>Astroneer Dedicated Server Checker</h2>
                         </div>
                         <div class="card-body p-0">
-                            <form id="checkIPPort">
-                                <label for="ip">IP: </label>
-                                <input
-                                    type="text"
-                                    name="ip"
-                                    id="ip"
-                                    value="{{ clientIP }}"
-                                />
-                                <label for="port">Port: </label>
-                                <input
-                                    type="text"
-                                    name="port"
-                                    id="port"
-                                    value="{{ clientPort }}"
-                                />
-                                <button>Submit</button>
+                            <form
+                                id="checkIPPort"
+                                class="form-inline d-flex justify-content-center"
+                            >
+                                <div class="form-group">
+                                    <label class="sr-only" for="ip">IP</label>
+                                    <input
+                                        type="text"
+                                        class="form-control mx-2"
+                                        name="ip"
+                                        id="ip"
+                                        placeholder="IP"
+                                        value="{{ clientIP }}"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label class="sr-only" for="port"
+                                        >Port</label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-control mx-2"
+                                        name="port"
+                                        id="port"
+                                        placeholder="Port"
+                                        value="{{ clientPort }}"
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary mx-2">
+                                        Submit
+                                    </button>
+                                </div>
                             </form>
-                            <div id="msg" class="p-0">
+                            <div id="msg" class="p-0 mt-2">
                                 <h5></h5>
                             </div>
                         </div>
@@ -48,56 +69,52 @@
                             class="card-footer text-center collapse px-0 pt-0"
                         >
                             <div class="row text-left m-0">
-                                <div class="ml-auto col-6">
-                                    <div class="row">
-                                        <div class="col-12">Server:</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">Playfab:</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            Server Version:
+                                <div class="col-12 mx-auto">
+                                    <div class="datarow row">
+                                        <div class="col-6 text-right">
+                                            Server:
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">Type:</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">Players:</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">Password:</div>
-                                    </div>
-                                </div>
-                                <div class="mr-auto col-6">
-                                    <div class="row">
-                                        <div class="col-12">
+                                        <div class="col-6">
                                             <span id="servstatus"></span>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12">
+                                    <div class="datarow row">
+                                        <div class="col-6 text-right">
+                                            Playfab:
+                                        </div>
+                                        <div class="col-6">
                                             <span id="pfstatus"></span>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12">
+                                    <div class="datarow row">
+                                        <div class="col-6 text-right">
+                                            Server Version:
+                                        </div>
+                                        <div class="col-6">
                                             <span id="servversion"></span>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12">
+                                    <div class="datarow row">
+                                        <div class="col-6 text-right">
+                                            Type:
+                                        </div>
+                                        <div class="col-6">
                                             <span id="servtype"></span>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12">
+                                    <div class="datarow row">
+                                        <div class="col-6 text-right">
+                                            Players:
+                                        </div>
+                                        <div class="col-6">
                                             <span id="servplayers"></span>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12">
+                                    <div class="datarow row">
+                                        <div class="col-6 text-right">
+                                            Password:
+                                        </div>
+                                        <div class="col-6">
                                             <span id="servpass"></span>
                                         </div>
                                     </div>
@@ -105,6 +122,10 @@
                             </div>
                         </div>
                     </div>
+                    <div
+                        id="tiptext"
+                        class="bg-warning text-dark collapse"
+                    ></div>
                 </div>
             </div>
         </div>
@@ -134,19 +155,28 @@
                     } else {
                         if (data.Server && data.Playfab) {
                             $("#msg h5").text("Status: Online");
+                            $("#tiptext").hide();
                             $("#msg").addClass("bg-success");
                             $("#servversion").show();
                             $("#servplayers").show();
+                            $("#servtype").show();
                             $("#servpass").show();
                         } else {
                             $("#servversion").hide();
                             $("#servplayers").hide();
+                            $("#servtype").hide();
                             $("#servpass").hide();
                             if (!data.Server) {
+                                $("#tiptext").append(
+                                    "<div>Tip: Your server is unreachable! Recheck your Port Forwards and Firewall!</div>"
+                                );
                                 $("#msg h5").text("Status: Unreachable");
                                 $("#msg").addClass("bg-danger");
                             }
                             if (!data.Playfab) {
+                                $("#tiptext").append(
+                                    "<div>Tip: Your server is not registered with Playfab! Make sure you're not blocking playfab's IP's!</div>"
+                                );
                                 $("#msg h5").text("Status: Unregistered");
                                 $("#msg").addClass("bg-danger");
                             }
@@ -179,6 +209,9 @@
                                 ")";
                             $("#servversion").addClass("bg-warning");
                             $("#servversion").addClass("text-dark");
+                            $("#tiptext").append(
+                                "<div>Tip: Your server isn't on the latest version! Make sure to update!</div>"
+                            );
                         } else {
                             $("#servversion").addClass("bg-success");
                             $("#servversion").addClass("text-dark");
@@ -191,6 +224,8 @@
                         $("#servpass").text(data.Password);
 
                         $("#data-footer").collapse("show");
+
+                        $("#tiptext").show();
                     }
                 };
                 $("#checkIPPort button").click(function (e) {
