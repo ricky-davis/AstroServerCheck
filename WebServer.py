@@ -99,7 +99,7 @@ class APIRequestHandler(tornado.web.RequestHandler):
             else:
                 UDP_PORT = "8777"
             UDP_IP_PORT = UDP_IP+":"+UDP_PORT
-
+            UDP_PORT = int(UDP_PORT)
             ipPortCombo = f"{UDP_IP_PORT}"
             data = {
                 "Server": False,
