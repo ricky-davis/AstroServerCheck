@@ -128,7 +128,7 @@ class APIRequestHandler(tornado.web.RequestHandler):
                     allVers = [x['Tags']['gameBuild'] for x in apfData]
                     maxVers = "0.0"
                     for v in allVers:
-                        if version.parse(v) > version.parse(maxVers):
+                        if version.parse(v) > version.parse(maxVers) and allVers.count(v) > 2:
                             maxVers = v
 
                     pfData = [x for x in apfData if x['Tags']
