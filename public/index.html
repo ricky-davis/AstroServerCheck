@@ -236,25 +236,27 @@
                     window.location.href = "?url=" + ip_port;
                 });
                 $(document).ready(function (e) {
-                    dSend = $("#checkIPPort").serialize();
-                    statusMsg({ status: "Checking" });
-                    $.ajax({
-                        type: "post",
-                        url: "/api",
-                        dataType: "json",
-                        data: dSend,
-                        contentType: "application/x-www-form-urlencoded",
-                        success: function (result) {
-                            console.log(result);
-                            statusMsg(result);
-                            //alert(result.status);
-                        },
-                        error: function (result) {
-                            console.log(result);
-                            statusMsg(result);
-                            //alert("Error");
-                        },
-                    });
+                    if (window.location.search != ""){
+                        dSend = $("#checkIPPort").serialize();
+                        statusMsg({ status: "Checking" });
+                        $.ajax({
+                            type: "post",
+                            url: "/api",
+                            dataType: "json",
+                            data: dSend,
+                            contentType: "application/x-www-form-urlencoded",
+                            success: function (result) {
+                                console.log(result);
+                                statusMsg(result);
+                                //alert(result.status);
+                            },
+                            error: function (result) {
+                                console.log(result);
+                                statusMsg(result);
+                                //alert("Error");
+                            },
+                        });
+                    }
                 });
             })();
         </script>
