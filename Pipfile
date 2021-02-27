@@ -12,6 +12,7 @@ tornado = "*"
 cachetools = "*"
 requests = "*"
 packaging = "*"
+arrow = "*"
 
 [requires]
 python_version = "3.7"

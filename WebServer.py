@@ -2,7 +2,9 @@
 import json
 import os
 import socket
+#from pprint import pprint
 
+import arrow
 import requests
 import tornado.web
 from cachetools import TTLCache
@@ -35,13 +37,17 @@ def get_all_servers(headers):
 class WebServer(tornado.web.Application):
     def __init__(self):
         self.serverCache = TTLCache(maxsize=500, ttl=10)
+        self.lastPFData = None
+        self.maxServerVersion = "0.0"
+        self.fullStatsData = {}
         self.allServerData = {}
         settings = {
             'debug': True,
             "static_path": "public",
         }
         handlers = [(r'/', MainHandler, {"path": settings['static_path']}),
-                    (r"/api", APIRequestHandler)
+                    (r"/api", APIRequestHandler),
+                    (r"/stats", StatsRequestHandler)
                     ]
         super().__init__(handlers, **settings)
 
@@ -84,6 +90,74 @@ class MainHandler(tornado.web.RequestHandler):
                     clientIP=clientIP, clientPort=clientPort)
 
 
+class StatsRequestHandler(tornado.web.RequestHandler):
+    # pylint: disable=arguments-differ
+    def pull_latest_data(self):
+        if self.application.lastPFData is None or (arrow.utcnow() - self.application.lastPFData).seconds >= 10:
+            headers = base_headers
+            headers["X-Authorization"] = generate_XAUTH("7")
+            apfData = get_all_servers(headers)
+            if len(apfData['data']['Games']) > 0:
+                apfData = apfData['data']['Games']
+                self.application.allServerData = apfData
+
+                allVers = [x['Tags']['gameBuild'] for x in apfData]
+                maxVers = "0.0"
+                for v in allVers:
+                    if version.parse(v) > version.parse(maxVers) and allVers.count(v) > 5:
+                        maxVers = v
+                self.application.maxServerVersion = maxVers
+
+    def get_stats(self, serverList, maxVers):
+        data = {
+            "serverCount": 0,
+            "playerCount": 0,
+            "upToDate": 0,
+            "hasPassword": 0,
+            "emptyServers": 0,
+        }
+        # pprint(serverList)
+        data["serverCount"] = len(serverList)
+        data["playerCount"] = sum(
+            [int(x['Tags']["numPlayers"]) for x in serverList])
+        data["upToDate"] = sum([(version.parse(
+            x['Tags']['gameBuild']) >= version.parse(maxVers)) for x in serverList])
+
+        data["hasPassword"] = sum(
+            [(x['Tags']['requiresPassword'] == 'true') for x in serverList])
+
+        data["emptyServers"] = sum(
+            [(int(x['Tags']["numPlayers"]) == 0) for x in serverList])
+        return data
+
+    def get(self):
+        FullStatsData = {
+            "LatestVersion": "0.0",
+            "Total": {},
+            "Preferred": {},
+            "Individual": {},
+        }
+        self.pull_latest_data()
+        if self.application.lastPFData is None or (arrow.utcnow() - self.application.lastPFData).seconds >= 10:
+            aSD = self.application.allServerData
+            maxVers = self.application.maxServerVersion
+            FullStatsData["LatestVersion"] = maxVers
+
+            preferredServers = [x for x in aSD if x['Tags']
+                                ['category'] == "Preferred"]
+            individualServers = [
+                x for x in aSD if x['Tags']['category'] == "Individual"]
+
+            FullStatsData["Total"] = self.get_stats(aSD, maxVers)
+            FullStatsData["Preferred"] = self.get_stats(
+                preferredServers, maxVers)
+            FullStatsData["Individual"] = self.get_stats(
+                individualServers, maxVers)
+            self.application.fullStatsData = FullStatsData
+
+        self.write(self.application.fullStatsData)
+
+
 class APIRequestHandler(tornado.web.RequestHandler):
     # pylint: disable=arguments-differ
     def post(self):
@@ -92,7 +166,7 @@ class APIRequestHandler(tornado.web.RequestHandler):
         UDP_IP = None
         UDP_PORT = None
         splitIPP = UDP_IP_PORT.split(":")
-        if(len(splitIPP) > 0):
+        if len(splitIPP) > 0:
             UDP_IP = splitIPP[0]
             if(len(splitIPP) > 1) and splitIPP[1] != b'':
                 UDP_PORT = splitIPP[1]
@@ -119,42 +193,34 @@ class APIRequestHandler(tornado.web.RequestHandler):
                 res = sendPacket(bytes(byteArray), UDP_IP, UDP_PORT)
                 data['Server'] = res
 
-                headers = base_headers
-                headers["X-Authorization"] = generate_XAUTH("7")
-                apfData = get_all_servers(headers)
-                if len(apfData['data']['Games']) > 0:
-                    apfData = apfData['data']['Games']
-                    self.application.allServerData = apfData
-                    allVers = [x['Tags']['gameBuild'] for x in apfData]
-                    maxVers = "0.0"
-                    for v in allVers:
-                        if version.parse(v) > version.parse(maxVers) and allVers.count(v) > 5:
-                            maxVers = v
+                StatsRequestHandler.pull_latest_data(self)
 
-                    pfData = [x for x in apfData if x['Tags']
-                              ['gameId'] == ipPortCombo]
+                aSD = self.application.allServerData
+                maxVers = self.application.maxServerVersion
 
-                    if len(pfData) > 0:
-                        pfData = pfData[0]
-                        data['Playfab'] = True
-                        data['Type'] = pfData['Tags']['category']
-                        if data['Type'] == "Individual":
-                            data['Type'] = "Self-Hosted"
-                            if "customdata" in pfData['Tags']['serverName']:
-                                cdata = json.loads(pfData['Tags']['serverName'])[
-                                    'customdata']
-                                data['Type'] = f"{cdata['ServerType']}"
-                        else:
-                            data['Type'] = "Nitrado"
+                pfData = [x for x in aSD if x['Tags']
+                          ['gameId'] == ipPortCombo]
 
-                        data['Version'] = pfData['Tags']['gameBuild']
+                if len(pfData) > 0:
+                    pfData = pfData[0]
+                    data['Playfab'] = True
+                    data['Type'] = pfData['Tags']['category']
+                    if data['Type'] == "Individual":
+                        data['Type'] = "Self-Hosted"
+                        if "customdata" in pfData['Tags']['serverName']:
+                            cdata = json.loads(pfData['Tags']['serverName'])[
+                                'customdata']
+                            data['Type'] = f"{cdata['ServerType']}"
+                    else:
+                        data['Type'] = "Nitrado"
 
-                        data['UpToDate'] = version.parse(
-                            data['Version']) >= version.parse(maxVers)
-                        data['LatestVersion'] = maxVers
+                    data['Version'] = pfData['Tags']['gameBuild']
 
-                        data['PlayerCount'] = f"{len(pfData['PlayerUserIds'])}/{pfData['Tags']['maxPlayers']}"
-                        data['Password'] = pfData['Tags']['requiresPassword']
+                    data['UpToDate'] = version.parse(
+                        data['Version']) >= version.parse(maxVers)
+
+                    data['PlayerCount'] = f"{len(pfData['PlayerUserIds'])}/{pfData['Tags']['maxPlayers']}"
+                    data['Password'] = pfData['Tags']['requiresPassword']
 
                 data['Fresh'] = True
                 self.application.serverCache[ipPortCombo] = data
@@ -163,9 +229,9 @@ class APIRequestHandler(tornado.web.RequestHandler):
                 data = self.application.serverCache[ipPortCombo]
                 data['Fresh'] = False
 
-            self.write(json.dumps(data))
+            self.write(data)
         else:
-            self.write(json.dumps({"status": "Error"}))
+            self.write({"status": "Error"})
 
 
 def check_ipv6(n):
