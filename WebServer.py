@@ -93,20 +93,49 @@ class MainHandler(tornado.web.RequestHandler):
 class StatsRequestHandler(tornado.web.RequestHandler):
     # pylint: disable=arguments-differ
     def pull_latest_data(self):
-        if self.application.lastPFData is None or (arrow.utcnow() - self.application.lastPFData).seconds >= 10:
-            headers = base_headers
-            headers["X-Authorization"] = generate_XAUTH("7")
-            apfData = get_all_servers(headers)
-            if len(apfData['data']['Games']) > 0:
-                apfData = apfData['data']['Games']
-                self.application.allServerData = apfData
+        try:
+            if self.application.lastPFData is None or (arrow.utcnow() - self.application.lastPFData).seconds >= 10:
+                headers = base_headers
+                headers["X-Authorization"] = generate_XAUTH("7")
+                apfData = get_all_servers(headers)
+                if len(apfData['data']['Games']) > 0:
+                    apfData = apfData['data']['Games']
+                    self.application.allServerData = apfData
+                    allVers = [x['Tags']['gameBuild'] for x in apfData]
+                    maxVers = "0.0"
+                    for v in allVers:
+                        if version.parse(v) > version.parse(maxVers) and allVers.count(v) > 5:
+                            maxVers = v
+                    self.application.maxServerVersion = maxVers
 
-                allVers = [x['Tags']['gameBuild'] for x in apfData]
-                maxVers = "0.0"
-                for v in allVers:
-                    if version.parse(v) > version.parse(maxVers) and allVers.count(v) > 5:
-                        maxVers = v
-                self.application.maxServerVersion = maxVers
+                    FullStatsData = {
+                        "LatestVersion": "0.0",
+                        "DataAge": 0,
+                        "Total": {},
+                        "Preferred": {},
+                        "Individual": {},
+                    }
+
+                    aSD = self.application.allServerData
+                    maxVers = self.application.maxServerVersion
+                    FullStatsData["LatestVersion"] = maxVers
+
+                    preferredServers = [x for x in aSD if x['Tags']
+                                        ['category'] == "Preferred"]
+                    individualServers = [
+                        x for x in aSD if x['Tags']['category'] == "Individual"]
+
+                    FullStatsData["Total"] = self.get_stats(aSD, maxVers)
+                    FullStatsData["Preferred"] = self.get_stats(
+                        preferredServers, maxVers)
+                    FullStatsData["Individual"] = self.get_stats(
+                        individualServers, maxVers)
+
+                    self.application.lastPFData = arrow.utcnow()
+                    FullStatsData["DataAge"] = self.application.lastPFData.int_timestamp
+                    self.application.fullStatsData = FullStatsData
+        except:
+            pass
 
     def get_stats(self, serverList, maxVers):
         data = {
@@ -131,30 +160,7 @@ class StatsRequestHandler(tornado.web.RequestHandler):
         return data
 
     def get(self):
-        FullStatsData = {
-            "LatestVersion": "0.0",
-            "Total": {},
-            "Preferred": {},
-            "Individual": {},
-        }
         self.pull_latest_data()
-        if self.application.lastPFData is None or (arrow.utcnow() - self.application.lastPFData).seconds >= 10:
-            aSD = self.application.allServerData
-            maxVers = self.application.maxServerVersion
-            FullStatsData["LatestVersion"] = maxVers
-
-            preferredServers = [x for x in aSD if x['Tags']
-                                ['category'] == "Preferred"]
-            individualServers = [
-                x for x in aSD if x['Tags']['category'] == "Individual"]
-
-            FullStatsData["Total"] = self.get_stats(aSD, maxVers)
-            FullStatsData["Preferred"] = self.get_stats(
-                preferredServers, maxVers)
-            FullStatsData["Individual"] = self.get_stats(
-                individualServers, maxVers)
-            self.application.fullStatsData = FullStatsData
-
         self.write(self.application.fullStatsData)
 
 
