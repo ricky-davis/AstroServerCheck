@@ -224,6 +224,7 @@ class APIRequestHandler(tornado.web.RequestHandler):
 
                     data['UpToDate'] = version.parse(
                         data['Version']) >= version.parse(maxVers)
+                    data['LatestVersion'] = maxVers
 
                     data['PlayerCount'] = f"{len(pfData['PlayerUserIds'])}/{pfData['Tags']['maxPlayers']}"
                     data['Password'] = pfData['Tags']['requiresPassword']
