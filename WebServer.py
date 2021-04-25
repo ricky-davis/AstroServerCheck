@@ -218,7 +218,7 @@ class APIRequestHandler(tornado.web.RequestHandler):
                                 'customdata']
                             data['Type'] = f"{cdata['ServerType']}"
                     else:
-                        data['Type'] = "Nitrado"
+                        data['Type'] = "Preferred / Rented"
 
                     data['Version'] = pfData['Tags']['gameBuild']
 
