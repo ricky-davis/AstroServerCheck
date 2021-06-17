@@ -16,8 +16,8 @@ from packaging import version
 
 base_headers = {
     "Content-Type": "application/json; charset=utf-8",
-    "X-PlayFabSDK": "UE4MKPL-1.19.190610",
-    "User-Agent": "game=Astro, engine=UE4, version=4.18.2-0+++UE4+Release-4.18, platform=Windows, osver=6.2.9200.1.256.64bit",
+    "X-PlayFabSDK": "UE4MKPL-1.49.201027",
+    "User-Agent": "Astro/++UE4+Release-4.23-CL-0 Windows/10.0.19042.1.256.64bit",
 }
 
 
@@ -36,7 +36,7 @@ def generate_XAUTH(serverGUID):
 
 
 def get_all_servers(headers):
-    url = "https://5EA1.playfabapi.com/Client/GetCurrentGames?sdk=UE4MKPL-1.19.190610"
+    url = "https://5EA1.playfabapi.com/Client/GetCurrentGames"
     x = (requests.post(url, headers=headers, json={})).json()
     return x
 
@@ -103,7 +103,7 @@ class StatsRequestHandler(tornado.web.RequestHandler):
         try:
             if self.application.lastPFData is None or (arrow.utcnow() - self.application.lastPFData).seconds >= 10:
                 headers = base_headers
-                headers["X-Authorization"] = generate_XAUTH("7")
+                headers["X-Authorization"] = generate_XAUTH("AstroServerCheck")
                 apfData = get_all_servers(headers)
                 if len(apfData['data']['Games']) > 0:
                     apfData = apfData['data']['Games']
