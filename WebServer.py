@@ -2,6 +2,7 @@
 import json
 import os
 import socket
+import time
 #from pprint import pprint
 
 import arrow
@@ -21,10 +22,16 @@ base_headers = {
 
 
 def generate_XAUTH(serverGUID):
-    url = "https://5EA1.playfabapi.com/Client/LoginWithCustomID?sdk=UE4MKPL-1.19.190610"
-    requestObj = {"CreateAccount": True,
+    url = "https://5EA1.playfabapi.com/Client/LoginWithCustomID"
+    requestObj = {"CreateAccount": False,
                   "CustomId": serverGUID, "TitleId": "5EA1"}
     x = (requests.post(url, headers=base_headers, json=requestObj)).json()
+    if x['code'] == 400 and x['error'] == "AccountNotFound":
+        time.sleep(0.2)
+        requestObj = {"CreateAccount": True,
+                      "CustomId": serverGUID, "TitleId": "5EA1"}
+        x = (requests.post(url, headers=base_headers, json=requestObj)).json()
+
     return x["data"]["SessionTicket"]
 
 
