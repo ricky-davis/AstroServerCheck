@@ -151,6 +151,7 @@ class StatsRequestHandler(tornado.web.RequestHandler):
             "upToDate": 0,
             "hasPassword": 0,
             "emptyServers": 0,
+            "uniqueIPs": 0,
         }
         # pprint(serverList)
         data["serverCount"] = len(serverList)
@@ -164,6 +165,9 @@ class StatsRequestHandler(tornado.web.RequestHandler):
 
         data["emptyServers"] = sum(
             [(int(x['Tags']["numPlayers"]) == 0) for x in serverList])
+
+        data["uniqueIPs"] = len(
+            set([x['ServerIPV4Address'] for x in serverList]))
         return data
 
     def get(self):
