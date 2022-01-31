@@ -2,6 +2,7 @@
 import json
 import os
 import socket
+import sys
 import time
 #from pprint import pprint
 
@@ -289,9 +290,15 @@ def sendPacket(MESSAGE, IP, Port):
 
 
 def start_WebServer():
-    ws = WebServer()
+    try:
+        print("Starting Web Server...")
+        ws = WebServer()
 
-    ws.run()
+        ws.run()
+    except Exception as err:
+        print(
+            f"{('SWS Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(err).__name__, err)}"
+        )
 
 
 if __name__ == "__main__":
@@ -299,3 +306,7 @@ if __name__ == "__main__":
         start_WebServer()
     except KeyboardInterrupt:
         print("WebServer was killed by CTRL+C")
+    except Exception as err:
+        print(
+            f"{('MAIN Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(err).__name__, err)}"
+        )
