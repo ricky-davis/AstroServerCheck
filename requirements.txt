@@ -1,7 +1,7 @@
 -i https://pypi.org/simple/
 arrow==1.0.3
 cachetools==4.2.1
-certifi==2021.5.30
+certifi==2022.12.7
 chardet==4.0.0
 idna==2.10
 nuitka==0.6.13.1
